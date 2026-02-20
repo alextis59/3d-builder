@@ -1,12 +1,13 @@
-# 3d-builder
+# 3d-builder (`gltf-studio`)
 
 Local glTF/GLB viewer/editor with an AI-agent friendly CLI.
 
-## Workspace
+This repository is a pnpm monorepo with four packages:
 
-- `packages/server`: Fastify API + secure asset serving + glTF inspection.
-- `packages/web`: Vite + React + React Three Fiber viewer and `/render` route.
-- `packages/cli`: `gltf-studio` CLI (`serve`, `list`, `inspect`, `render`, `--turntable`).
+- `@gltf-studio/server`: Fastify API for asset indexing, inspection, secure file serving, and export.
+- `@gltf-studio/web`: React + React Three Fiber UI for interactive viewing/editing and headless render pages.
+- `@gltf-studio/cli`: `gltf-studio` command for local serving, inspection, export, and screenshot rendering.
+- `@gltf-studio/shared`: Shared Zod schemas and TypeScript types for ops/export payloads.
 
 ## Quick start
 
@@ -17,21 +18,65 @@ pnpm -C packages/cli exec playwright install chromium
 pnpm -C packages/cli dev serve . --open
 ```
 
-## CLI examples
+## Common workflows
+
+### Start the local app (UI + API)
 
 ```bash
-# List assets recursively under current folder
-gltf-studio list .
+pnpm -C packages/web build
+pnpm -C packages/cli dev serve /path/to/assets --open
+```
 
-# Inspect one asset
-gltf-studio inspect models/robot.glb --root .
+### Explore assets from CLI
 
-# Single screenshot
-gltf-studio render models/robot.glb --root . --out shots/robot.png --size 1024x1024
+```bash
+gltf-studio list /path/to/assets
+gltf-studio inspect models/robot.glb --root /path/to/assets
+```
 
-# Turntable screenshots (robot_000.png ... robot_015.png)
-gltf-studio render models/robot.glb --root . --out shots/robot.png --turntable 16 --size 768x768
+### Export with edit ops
 
-# Export with patch ops
-gltf-studio export models/robot.glb --root . --ops ops/robot.json --out models/robot.edited.glb --preset preview-web
+```bash
+gltf-studio export models/robot.glb \
+  --root /path/to/assets \
+  --ops ops/robot.json \
+  --out models/robot.edited.glb \
+  --preset preview-web
+```
+
+### Render screenshots (single + turntable)
+
+```bash
+# Single frame
+
+gltf-studio render models/robot.glb \
+  --root /path/to/assets \
+  --out shots/robot.png \
+  --size 1024x1024
+
+# Turntable sequence (robot_000.png ... robot_015.png)
+
+gltf-studio render models/robot.glb \
+  --root /path/to/assets \
+  --out shots/robot.png \
+  --turntable 16 \
+  --size 768x768
+```
+
+## Developer docs
+
+For onboarding and implementation details, see:
+
+- [`docs/developer-guide.md`](docs/developer-guide.md): architecture, package responsibilities, API/CLI contracts, ops schema, and development/testing workflows.
+
+## Monorepo scripts
+
+Run from repository root:
+
+```bash
+pnpm dev
+pnpm build
+pnpm typecheck
+pnpm test
+pnpm test:coverage
 ```
